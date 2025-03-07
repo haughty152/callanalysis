@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Call Analysis System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css">
+    <style>
+        .container {
+            padding-top: 30px;
+            padding-bottom: 50px;
+        }
+        .card {
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .excellent {
+            background-color: #d4edda;
+        }
+        .good {
+            background-color: #fff3cd;
+        }
+        .needs-improvement {
+            background-color: #f8d7da;
+        }
+        .header-row {
+            font-weight: bold;
+            background-color: #f8f9fa;
+        }
+        .score-cell {
+            font-weight: bold;
+        }
+        .audio-player {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        .overall-score {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        .logo {
+            height: 50px;
+            margin-right: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex align-items-center">
+                    <h2 class="mb-0">Call Analysis System</h2>
+                </div>
+            </div>
+            <div class="card-body">
+                <form action="/" method="post" enctype="multipart/form-data" class="mb-4">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Upload Call Recording (WAV, MP3, M4A):</label>
+                        <input type="file" name="file" id="file" class="form-control" accept=".wav,.mp3,.m4a" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Analyze Call</button>
+                </form>
+                
+                {% if audio_path %}
+                <div class="card mt-4">
+                    <div class="card-header bg-info text-white">
+                        <h4 class="mb-0">Call Recording</h4>
+                    </div>
+                    <div class="card-body">
+                        <audio controls class="audio-player">
+                            <source src="{{ url_for('play_audio', filename=audio_path.split('/')[-1]) }}" type="audio/wav">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if analysis_data %}
+                <div class="card mt-4">
+                    <div class="card-header bg-success text-white">
+                        <h4 class="mb-0">Call Scorecard Analysis</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead class="header-row">
+                                    <tr>
+                                        <th scope="col">Criterion</th>
+                                        <th scope="col">Score</th>
+                                        <th scope="col">Comments</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in analysis_data %}
+                                        {% if item[0] == 'OVERALL SCORE' %}
+                                            {% set row_class = '' %}
+                                            {% if '90%' in item[2] or 'Excellent' in item[2] %}
+                                                {% set row_class = 'table-success' %}
+                                            {% elif '70%' in item[2] or 'Good' in item[2] %}
+                                                {% set row_class = 'table-warning' %}
+                                            {% elif '50%' in item[2] or 'Needs' in item[2] %}
+                                                {% set row_class = 'table-danger' %}
+                                            {% endif %}
+                                            <tr class="{{ row_class }}">
+                                                <td colspan="3" class="text-center overall-score">{{ item[0] }}: {{ item[2] }}</td>
+                                            </tr>
+                                        {% else %}
+                                            {% set row_class = '' %}
+                                            {% if 'Excellent' in item[2] %}
+                                                {% set row_class = 'table-success' %}
+                                            {% elif 'Good' in item[2] %}
+                                                {% set row_class = 'table-warning' %}
+                                            {% elif 'Needs' in item[2] %}
+                                                {% set row_class = 'table-danger' %}
+                                            {% endif %}
+                                            <tr class="{{ row_class }}">
+                                                <td>{{ item[0] }}</td>
+                                                <td class="score-cell">{{ item[1] }}</td>
+                                                <td>{{ item[2] }}</td>
+                                            </tr>
+                                        {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        {% if excel_path %}
+                        <div class="mt-3">
+                            <a href="{{ url_for('download_excel') }}" class="btn btn-success">
+                                <i class="bi bi-download"></i> Download Excel Report
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <footer class="text-center text-muted">
+            <p>Call Scorecard Analysis Tool &copy; 2025</p>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

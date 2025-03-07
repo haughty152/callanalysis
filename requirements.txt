@@ -1,0 +1,8 @@
+Flask
+speechrecognition
+pydub
+langdetect
+deep-translator
+pandas
+openpyxl
+werkzeug
